@@ -26,7 +26,7 @@ from sklearn.metrics import confusion_matrix
 #-------------------------------------------------------------------------------------
 def my_histogram (hist_data):
     """Histogram plot of the data"""
-    plt.hist(hist_data[0:len(hist_data)],bins=20,stacked=False)
+    plt.hist(hist_data[0:len(hist_data)],bins=50,stacked=False)
     plt.legend()
     plt.show()
     
@@ -767,137 +767,137 @@ def feed_forward(test_data,syn0,syn1,activation_function):
     return predict
 
 
-
+if __name__ == "__main__":
     
-#-----------------------------------------------------------------------------------
-# MAIN PROGRAM *****************************MAIN PROGRAM*************MAIN PROGRAM  
+    #-----------------------------------------------------------------------------------
+    # MAIN PROGRAM *****************************MAIN PROGRAM*************MAIN PROGRAM  
 
-startTime=time.time()
+    startTime=time.time()
 
-#Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
-n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='CDH')
+    #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
+    n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='CDH')
 
-#-----------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------
 
-the_score=[]
-dbp=[]
-the_learning_rate=[]
-num_interations=[]
-num_neurons=[]
-act_function=[]
-loss_function=[]
+    the_score=[]
+    dbp=[]
+    the_learning_rate=[]
+    num_interations=[]
+    num_neurons=[]
+    act_function=[]
+    loss_function=[]
 
-plot_me='yes'
+    plot_me='yes'
 
-learn_rate=[.1]
-epoch=[1000]
-neurons=[2]
+    learn_rate=[.1]
+    epoch=[1000]
+    neurons=[2]
 
-#Hidden Layer Activation Function Select (your options are: sig or relu or tanh)
-##AF=['sig','relu','tanh']
-AF=['sig']
+    #Hidden Layer Activation Function Select (your options are: sig or relu or tanh)
+    ##AF=['sig','relu','tanh']
+    AF=['sig']
 
-plot_count=0
+    plot_count=0
 
 
-for n_hidden,num_epoch,Alpha,activation_function in [(n_hidden,num_epoch,Alpha,activation_function) for n_hidden in neurons for num_epoch in epoch for Alpha in learn_rate for activation_function in AF]:
+    for n_hidden,num_epoch,Alpha,activation_function in [(n_hidden,num_epoch,Alpha,activation_function) for n_hidden in neurons for num_epoch in epoch for Alpha in learn_rate for activation_function in AF]:
 
-#initialize layer 1 weights
-    np.random.seed(0)
-    syn0=np.random.normal(scale=0.1, size=(n_inputs,n_hidden))
-    print('syn0:\n',syn0)
+    #initialize layer 1 weights
+        np.random.seed(0)
+        syn0=np.random.normal(scale=0.1, size=(n_inputs,n_hidden))
+        print('syn0:\n',syn0)
 
-    syn1=np.random.normal(scale=0.1, size=(n_hidden+1,n_outputs))
-    print('syn1:\n',syn1)
-#this matrix is already transposed
-    
-
-#calling the training algorithm
-    trained_syn0,trained_syn1,CFXplot,CFYplot,the_cost=training_algorithm(X,y,syn0,syn1,activation_function,num_epoch=num_epoch,Alpha=Alpha)
-
-#your trained weights
-##    trained_syn0=trained[0]
-##    trained_syn1=trained[1]
-
-    print ('syn0_after:\n',trained_syn0)
-    print ('syn1_after:\n',trained_syn1)
-
-#now test the model using your test data
-    the_test_results,model_accuracy,con_matrix,precision_1,recall_1,precision_0,recall_0,con_mat=test_the_model(test_data,trained_syn0,trained_syn1,activation_function,X,y,test_output)
-##    result_scatter(the_test_results,test_output)
-    the_score.append(model_accuracy)
-    the_learning_rate.append(Alpha)
-    num_interations.append(num_epoch)
-    num_neurons.append(n_hidden)
-    act_function.append(activation_function)
-    loss_function.append(the_cost)
-    
-
-    if ((n_inputs-1)==2)and plot_me=='yes':
+        syn1=np.random.normal(scale=0.1, size=(n_hidden+1,n_outputs))
+        print('syn1:\n',syn1)
+    #this matrix is already transposed
         
-        dd=decision_boundary_plot(X,y,trained_syn0,trained_syn1,activation_function,the_test_results,test_output,num_epoch,Alpha,n_hidden,model_accuracy)
 
-        dbp.append(dd)
+    #calling the training algorithm
+        trained_syn0,trained_syn1,CFXplot,CFYplot,the_cost=training_algorithm(X,y,syn0,syn1,activation_function,num_epoch=num_epoch,Alpha=Alpha)
 
-        location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\NN_Result_{}.pdf'.format(plot_count)
+    #your trained weights
+    ##    trained_syn0=trained[0]
+    ##    trained_syn1=trained[1]
+
+        print ('syn0_after:\n',trained_syn0)
+        print ('syn1_after:\n',trained_syn1)
+
+    #now test the model using your test data
+        the_test_results,model_accuracy,con_matrix,precision_1,recall_1,precision_0,recall_0,con_mat=test_the_model(test_data,trained_syn0,trained_syn1,activation_function,X,y,test_output)
+    ##    result_scatter(the_test_results,test_output)
+        the_score.append(model_accuracy)
+        the_learning_rate.append(Alpha)
+        num_interations.append(num_epoch)
+        num_neurons.append(n_hidden)
+        act_function.append(activation_function)
+        loss_function.append(the_cost)
+        
+
+        if ((n_inputs-1)==2)and plot_me=='yes':
+            
+            dd=decision_boundary_plot(X,y,trained_syn0,trained_syn1,activation_function,the_test_results,test_output,num_epoch,Alpha,n_hidden,model_accuracy)
+
+            dbp.append(dd)
+
+            location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\NN_Result_{}.pdf'.format(plot_count)
+            plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
+              orientation='portrait', papertype=None, format=None,
+              transparent=False, bbox_inches=None, pad_inches=0.1,
+              frameon=None)
+        
+        cf=plot_cost_function(CFXplot,CFYplot,num_epoch,Alpha,n_hidden,model_accuracy,activation_function)
+
+        location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\CF_Result_{}.pdf'.format(plot_count)
         plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
-          orientation='portrait', papertype=None, format=None,
-          transparent=False, bbox_inches=None, pad_inches=0.1,
-          frameon=None)
-    
-    cf=plot_cost_function(CFXplot,CFYplot,num_epoch,Alpha,n_hidden,model_accuracy,activation_function)
-
-    location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\CF_Result_{}.pdf'.format(plot_count)
-    plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
-          orientation='portrait', papertype=None, format=None,
-          transparent=False, bbox_inches=None, pad_inches=0.1,
-          frameon=None)
-    
-    plot_count=plot_count+1
+              orientation='portrait', papertype=None, format=None,
+              transparent=False, bbox_inches=None, pad_inches=0.1,
+              frameon=None)
+        
+        plot_count=plot_count+1
 
 
-##the_mesh=mash_it(the_test_results)
-##contour_data=get_contour_data(the_mesh,trained_syn0,trained_syn1,activation_function)
-##my_contour_plot(contour_data,the_test_results)
-    
-endTime=time.time()
-print('Duration :',endTime-startTime,' seconds')
-print('Model accuracy: ',the_score)
-print('Hidden layer size: ',num_neurons)
-print('Number of iterations: ',num_interations)
-print('Learning rate: ',the_learning_rate)
-print('Activation function: ',act_function)
+    ##the_mesh=mash_it(the_test_results)
+    ##contour_data=get_contour_data(the_mesh,trained_syn0,trained_syn1,activation_function)
+    ##my_contour_plot(contour_data,the_test_results)
+        
+    endTime=time.time()
+    print('Duration :',endTime-startTime,' seconds')
+    print('Model accuracy: ',the_score)
+    print('Hidden layer size: ',num_neurons)
+    print('Number of iterations: ',num_interations)
+    print('Learning rate: ',the_learning_rate)
+    print('Activation function: ',act_function)
 
-df=pd.DataFrame({'Model_accuracy':the_score,'Cost_function':loss_function,'Hidden_layer_size':num_neurons,'Number_of_iterations':num_interations,'Learning_rate':the_learning_rate,'Activation_function':act_function})
+    df=pd.DataFrame({'Model_accuracy':the_score,'Cost_function':loss_function,'Hidden_layer_size':num_neurons,'Number_of_iterations':num_interations,'Learning_rate':the_learning_rate,'Activation_function':act_function})
 
-results_location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\learning_table.csv'
-df.to_csv(results_location)        
-print(df)
-print('Confusion Matrix:\n',con_matrix)
-print('Precision_1:',precision_1)
-print('Recall_1:',recall_1)
-print('Precision_0:',precision_0)
-print('Recall_0:',recall_0)
+    results_location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\learning_table.csv'
+    df.to_csv(results_location)        
+    print(df)
+    print('Confusion Matrix:\n',con_matrix)
+    print('Precision_1:',precision_1)
+    print('Recall_1:',recall_1)
+    print('Precision_0:',precision_0)
+    print('Recall_0:',recall_0)
 
-F1_0=2*((precision_0*recall_0)/(precision_0+recall_0))
-F1_1=2*((precision_1*recall_1)/(precision_1+recall_1))
+    F1_0=2*((precision_0*recall_0)/(precision_0+recall_0))
+    F1_1=2*((precision_1*recall_1)/(precision_1+recall_1))
 
-print ('F1 for 0 output:', F1_0)
-print ('F1 for 1 output:', F1_1)
+    print ('F1 for 0 output:', F1_0)
+    print ('F1 for 1 output:', F1_1)
 
-print('   \n')
+    print('   \n')
 
-print('Confusion Matrix (SKlearn):\n',con_mat)
+    print('Confusion Matrix (SKlearn):\n',con_mat)
 
 
-##plt.plot(CFX_data,CFY_data);plt.show()
+    ##plt.plot(CFX_data,CFY_data);plt.show()
 
-##plt.show()
+    ##plt.show()
 
-##my_histogram(X)
-##my_scattermatrix(pd.DataFrame(X))
-              
-#--------------------------------------------------------------'
+    ##my_histogram(X)
+    ##my_scattermatrix(pd.DataFrame(X))
+                  
+    #--------------------------------------------------------------'
 
 
 

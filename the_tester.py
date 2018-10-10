@@ -9,5 +9,7 @@ x1=np.random.normal(loc=0,scale=1, size=(30,1))
 x2=np.random.normal(loc=0,scale=1, size=(30,1))
 X=np.concatenate((x1,x2),axis=1)
 
+my_histogram(x1)
+my_histogram(x2)
 
 print (x1)
