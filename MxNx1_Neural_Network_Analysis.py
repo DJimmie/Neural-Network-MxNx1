@@ -25,16 +25,19 @@ from sklearn.metrics import confusion_matrix
 
 #-------------------------------------------------------------------------------------
 def my_histogram (hist_data):
+    """Histogram plot of the data"""
     plt.hist(hist_data[0:len(hist_data)],bins=20,stacked=False)
     plt.legend()
     plt.show()
     
 
 def my_scattermatrix(scat_data):
+    """scatter matrix plot of the dataset"""
     scatter_matrix(scat_data,alpha=0.2,diagonal='hist')
 
 
 def sigmoid(x,deriv=False):
+    """sigmoid activation function and its derivative"""
     if(deriv==True):
         #returns the derivative of the activation function
         return x * (1 - x)
@@ -44,6 +47,7 @@ def sigmoid(x,deriv=False):
 
     
 def ReLu(b,deriv=False):
+    """ReLu activation function and its derivative"""
     
     if(deriv==True):
         gprime=[]
@@ -58,6 +62,7 @@ def ReLu(b,deriv=False):
     return np.maximum(b,0)
 
 def tanh(x,deriv=False):
+    """tanh activation function and its derivative"""
     if(deriv==True):
         #returns the derivative of the activation function
         return 1-(np.tanh(x))**2
@@ -770,7 +775,7 @@ def feed_forward(test_data,syn0,syn1,activation_function):
 startTime=time.time()
 
 #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
-n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='circles')
+n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='CDH')
 
 #-----------------------------------------------------------------------------------
 
@@ -785,8 +790,8 @@ loss_function=[]
 plot_me='yes'
 
 learn_rate=[.1]
-epoch=[10000]
-neurons=[8]
+epoch=[1000]
+neurons=[2]
 
 #Hidden Layer Activation Function Select (your options are: sig or relu or tanh)
 ##AF=['sig','relu','tanh']
