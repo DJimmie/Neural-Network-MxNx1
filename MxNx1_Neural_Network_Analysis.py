@@ -15,6 +15,9 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.datasets import make_moons,make_circles
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import precision_score,recall_score
 from matplotlib.colors import ListedColormap
 import matplotlib.mlab as mlab
 plt.style.use('seaborn-white')
@@ -252,7 +255,9 @@ def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
     my_results=[]
     plot_color=[]
     raw_predictions=[]
-    predictions=[]                   
+    predictions=[]
+    binary_pred=[]
+    
     for p in range(test_data.shape[0]):
         TD=np.insert(test_data[p],0,1, axis=0)
         #print(TD)
@@ -280,13 +285,16 @@ def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
         #setting the color based on the output
         if (a2[0])<.5:
             the_color='b'
+            bp=0
         else:
             the_color='r'
+            bp=1
         
         plot_color.append(the_color)
 
         #list of the output predictions
         predictions.append(a2[0])
+        binary_pred.append(bp)
         #raw_predictions.append(a2[0])
     
     #print('Predictions:',predictions)
@@ -294,6 +302,8 @@ def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
     predict=np.asarray(predictions)
     raw=np.asarray(raw_predictions)
     r=raw.reshape(len(raw_predictions),1)
+
+    bi_pred=np.asarray(binary_pred)
     
     print('predict:\n',predict)
 
@@ -346,9 +356,18 @@ def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
 
 ## 
 
-    
+    accur_scikit=accuracy_score(test_output,bi_pred)  #***6-1-2019
+    recall_scikit=recall_score(test_output,bi_pred,average=None)#***6-1-2019
+    prec_scikit=precision_score(test_output,bi_pred,average=None)#***6-1-2019
+
+    print('Model accuracy (scikit): ',accur_scikit)
+    print('Model recall (scikit): ',recall_scikit)
+    print('Model precision (scikit): ',prec_scikit)
 
 ##    print('Model accuracy: ',accur)
+
+
+    
 
 ##    decision_boundaries(syn0,X1_instance,X2_instance,plot_color,X,y)
     
@@ -397,7 +416,7 @@ def decision_boundaries(syn0,X1_instance,X2_instance,plot_color,X,y):
 
 def plot_cost_function(Xplot,Yplot,num_epoch,Alpha,n_hidden,model_accuracy,activation_function):
     plt.figure(figsize=(15,5))
-    plt.title('Cost Function - e={}  alpha={}  n={}  accuracy={}  activation={} '.format(num_epoch,Alpha,n_hidden,model_accuracy,activation_function))
+    plt.title('Plot Cost Function: e={}  alpha={}  n={}  accuracy={}  activation={} '.format(num_epoch,Alpha,n_hidden,model_accuracy,activation_function))
     plt.xlabel("Iterations")
     plt.ylabel("Error")
 ##    plt.ylim(0,1)
@@ -493,12 +512,12 @@ def data_set_select(data_select):
 
     elif (data_select=='CDH'):
 #feature matrix
-        the_file=r'C:\Users\Sharyn\Desktop\Datasets\CDH_Train.csv'
-        my_data=pd.read_csv(the_file,usecols=[0,1,3])
+        the_file=r'C:\Users\Crystal\Desktop\Programs\dataset_repo\CDH_Train.csv'
+        my_data=pd.read_csv(the_file,usecols=[0,1,2])
         my_data.dropna(axis=0,inplace=True)
         my_data=my_data.apply(lambda x:(x-np.min(x))/(np.max(x)-np.min(x)))
         X_data=my_data[['Length','Width']]
-        Y_data=my_data['Output']
+        Y_data=my_data['model_target']
         
         X, test_data, y, test_output=train_test_split(X_data,Y_data)
         
@@ -607,10 +626,17 @@ def data_set_select(data_select):
 #_____________________PIMA__________________________________
     elif (data_select=='pima'):
 #feature matrix
-        the_file=r'C:\Users\Sharyn\Desktop\Datasets\pima\diabetes.csv'
+        the_file=r'C:\Users\Crystal\Desktop\Programs\dataset_repo\diabetes.csv'
         usecols=['Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age','Outcome']
-        my_features=['Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age']
+        my_features=['SkinThickness','Insulin','BMI']
         my_data=pd.read_csv(the_file,usecols=usecols)
+
+        replace_the_zeros=['Age','Glucose','BloodPressure','SkinThickness','Insulin','BMI']
+        for header in replace_the_zeros:
+            my_data[header]=my_data[header].replace(0,np.nan)
+            mean=int(my_data[header].mean(skipna=True))
+            my_data[header]=my_data[header].replace(np.nan,mean)
+        
         my_data.dropna(axis=0,inplace=True)
         my_data=my_data.apply(lambda x:(x-np.min(x))/(np.max(x)-np.min(x)))
         X_data=my_data[my_features]
@@ -775,7 +801,7 @@ if __name__ == "__main__":
     startTime=time.time()
 
     #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
-    n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='CDH')
+    n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='pima')
 
     #-----------------------------------------------------------------------------------
 
@@ -790,8 +816,8 @@ if __name__ == "__main__":
     plot_me='yes'
 
     learn_rate=[.1]
-    epoch=[1000]
-    neurons=[2]
+    epoch=[5000]
+    neurons=[8]
 
     #Hidden Layer Activation Function Select (your options are: sig or relu or tanh)
     ##AF=['sig','relu','tanh']
@@ -839,7 +865,7 @@ if __name__ == "__main__":
 
             dbp.append(dd)
 
-            location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\NN_Result_{}.pdf'.format(plot_count)
+            location=r'C:\Users\Crystal\Desktop\Programs\neural_network\NN_Result_{}.pdf'.format(plot_count)
             plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
               orientation='portrait', papertype=None, format=None,
               transparent=False, bbox_inches=None, pad_inches=0.1,
@@ -847,7 +873,7 @@ if __name__ == "__main__":
         
         cf=plot_cost_function(CFXplot,CFYplot,num_epoch,Alpha,n_hidden,model_accuracy,activation_function)
 
-        location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\CF_Result_{}.pdf'.format(plot_count)
+        location=r'C:\Users\Crystal\Desktop\Programs\neural_network\CF_Result_{}.pdf'.format(plot_count)
         plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
               orientation='portrait', papertype=None, format=None,
               transparent=False, bbox_inches=None, pad_inches=0.1,
@@ -870,7 +896,7 @@ if __name__ == "__main__":
 
     df=pd.DataFrame({'Model_accuracy':the_score,'Cost_function':loss_function,'Hidden_layer_size':num_neurons,'Number_of_iterations':num_interations,'Learning_rate':the_learning_rate,'Activation_function':act_function})
 
-    results_location=r'C:\Users\Sharyn\Desktop\Python_Programs\Neural Networks\Neural Network Results\learning_table.csv'
+    results_location=r'C:\Users\Crystal\Desktop\Programs\neural_network\learning_table.csv'
     df.to_csv(results_location)        
     print(df)
     print('Confusion Matrix:\n',con_matrix)
