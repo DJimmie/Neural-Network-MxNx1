@@ -3,7 +3,7 @@
 ## 01-18-2018: created this version. (previous version was 'MxNx1 Neural network-Analysis 11292017')
 ## 03-13-2018: added the pima indian diabetes dataset to the data_set_select function
 
-
+# %%
 #------------------------------------------------------------------------------------
 import pandas as pd
 import numpy as np
@@ -23,21 +23,23 @@ import matplotlib.mlab as mlab
 plt.style.use('seaborn-white')
 import math
 from sklearn.metrics import confusion_matrix
+import sys
+import os
 
 
-
+# %%
 #-------------------------------------------------------------------------------------
 def my_histogram (hist_data):
     """Histogram plot of the data"""
     plt.hist(hist_data[0:len(hist_data)],bins=50,stacked=False)
     plt.legend()
     plt.show()
-    
+ # %%   
 
 def my_scattermatrix(scat_data):
     """scatter matrix plot of the dataset"""
     scatter_matrix(scat_data,alpha=0.2,diagonal='hist')
-
+# %%
 
 def sigmoid(x,deriv=False):
     """sigmoid activation function and its derivative"""
@@ -75,7 +77,7 @@ def tanh(x,deriv=False):
 
 '************************************************************************'
 
-
+# %%
 '*********************************************************************'
 def result_scatter(the_test_results,the_actual_output):
     xx_square=[]
@@ -166,7 +168,8 @@ def plot_training_data(X,y):
             plt.scatter(x=xx_b, y=yy_b,color='b')
     plt.show()
     #return (xx_r,yy_r,xx_b,yy_b)
-    
+
+   # %% 
 #---------------------------------------------------------------------------
 def training_algorithm(X,y,syn0,syn1,activation_function,num_epoch,Alpha=.5):
     
@@ -178,9 +181,9 @@ def training_algorithm(X,y,syn0,syn1,activation_function,num_epoch,Alpha=.5):
     syn1_plot=[]
     it=0
 
-    t0=time.clock
+    # t0=time.clock
     for epoch in range(num_epoch):
-        t1=time.clock
+        # t1=time.clock
         for i in range(X.shape[0]):   
             Z1=syn0.T.dot(X[i])
             if (activation_function=='relu'):
@@ -247,6 +250,8 @@ def training_algorithm(X,y,syn0,syn1,activation_function,num_epoch,Alpha=.5):
     #print("Epoch:%d, Cost: %.8f, Time: %.4f"%(epoch, Cost_Function,time.clock()-t0))
     #print("time:",time.clock()-t0)
     #print("SGD Elapsed Time:",time.clock()-t1)
+
+  # %%  
 #--------------------------------------------------------------------------------------
 def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
     X1_instance=[]
@@ -335,10 +340,19 @@ def test_the_model(test_data,syn0,syn1,activation_function,X,y,test_output):
     accur=(target_count-count_it)/target_count
     confusion_matrix=np.array([[TN,FP],[FN,TP]])
 
-    precision_1=TP/(TP+FP)
+    try:
+        precision_1=TP/(TP+FP)
+    except ZeroDivisionError:
+        precision_1=0
+
+
     recall_1=TP/(TP+FN)
     
-    precision_0=TN/(TN+FN)
+    try:
+        precision_0=TN/(TN+FN)
+    except ZeroDivisionError:
+        precision_0=0
+
     recall_0=TN/(TN+FP)
 
     y_round_predict=np.round(predict)
@@ -628,7 +642,7 @@ def data_set_select(data_select):
 #feature matrix
         the_file=r'C:\Users\Crystal\Desktop\Programs\dataset_repo\diabetes.csv'
         usecols=['Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age','Outcome']
-        my_features=['SkinThickness','Insulin','BMI']
+        my_features=['BloodPressure','Age','BMI']
         my_data=pd.read_csv(the_file,usecols=usecols)
 
         replace_the_zeros=['Age','Glucose','BloodPressure','SkinThickness','Insulin','BMI']
@@ -792,16 +806,69 @@ def feed_forward(test_data,syn0,syn1,activation_function):
 
     return predict
 
+# %%
+def read_input_parameters():
+    """read the model parameters from external text file"""
+    values=[]
+    with open("model_parameters.txt") as fp: 
+        for line in fp: 
+            a=line.split('-')
+            values.append(a[0])
+            print(a)
+    # creating list for parameters and converting to appropiate data type
 
+    lr=values[2].split('|')
+    numIterations=values[3].split('|')
+    hiddenLayerN=values[4].split('|')
+    act_funct=values[5].split('|')
+
+    if (lr[1]=='s'):
+        values[2]=[float(lr[0])]
+    else:
+        values[2]=[float(x) for x in lr]
+
+    if (numIterations[1]=='s'):
+        values[3]=[int(numIterations[0])]
+    else:
+        values[3]=[int(x) for x in numIterations]
+
+    if (hiddenLayerN[1]=='s'):
+        values[4]=[int(hiddenLayerN[0])]
+    else:
+        values[4]=[int(x) for x in hiddenLayerN]
+
+    if (act_funct[1]=='s'):
+        values[5]=[act_funct[0]]
+    else:
+        values[5]=act_funct
+
+    
+    # values[3]=[int(x) for x in values[3].split('|')]
+    # values[4]=[int(x) for x in values[4].split('|')]
+    # values[5]=values[5].split('|')
+
+
+    print(values[2])
+    return values
+
+# %%
 if __name__ == "__main__":
     
+
+    model_param=read_input_parameters()
+    for z in model_param:
+        print(f'{z}---{type(z)}')
+
+    # sys.exit()
+
+
     #-----------------------------------------------------------------------------------
     # MAIN PROGRAM *****************************MAIN PROGRAM*************MAIN PROGRAM  
 
     startTime=time.time()
 
     #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
-    n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select='pima')
+    n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select=model_param[0]) #model_param[0]
 
     #-----------------------------------------------------------------------------------
 
@@ -813,17 +880,28 @@ if __name__ == "__main__":
     act_function=[]
     loss_function=[]
 
-    plot_me='yes'
+    plot_me=model_param[1] # model_param[1]
 
-    learn_rate=[.1]
-    epoch=[5000]
-    neurons=[8]
+    # learn_rate=[float(model_param[2])]
+    # epoch=[int(model_param[3])]
+    # neurons=[int(model_param[4])]
+
+    learn_rate=model_param[2]
+    epoch=model_param[3]
+    neurons=model_param[4]
+
+    # learn_rate=[.1]
+    # epoch=[100]
+    # neurons=[8]
 
     #Hidden Layer Activation Function Select (your options are: sig or relu or tanh)
-    ##AF=['sig','relu','tanh']
-    AF=['sig']
+    # AF=['sig','relu','tanh']
+    # AF=[model_param[5]]
+    AF=model_param[5]
+    # AF=['sig']
 
     plot_count=0
+
 
 
     for n_hidden,num_epoch,Alpha,activation_function in [(n_hidden,num_epoch,Alpha,activation_function) for n_hidden in neurons for num_epoch in epoch for Alpha in learn_rate for activation_function in AF]:
@@ -859,7 +937,7 @@ if __name__ == "__main__":
         loss_function.append(the_cost)
         
 
-        if ((n_inputs-1)==2)and plot_me=='yes':
+        if ((n_inputs-1)==2)and plot_me==model_param[1]:  #model_param[1]
             
             dd=decision_boundary_plot(X,y,trained_syn0,trained_syn1,activation_function,the_test_results,test_output,num_epoch,Alpha,n_hidden,model_accuracy)
 
