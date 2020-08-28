@@ -681,6 +681,50 @@ def data_set_select(data_select):
         print('Test output:',test_output[0:5])
 
 
+#_____________________EXTERNAL FILE__________________________________
+    elif (data_select=='external'):
+#feature matrix
+        the_file=external_file
+        my_features=the_features
+        my_data=pd.read_csv(the_file,usecols=my_features)
+
+        # replace_the_zeros=['Age','Glucose','BloodPressure','SkinThickness','Insulin','BMI']
+        # for header in replace_the_zeros:
+        #     my_data[header]=my_data[header].replace(0,np.nan)
+        #     mean=int(my_data[header].mean(skipna=True))
+        #     my_data[header]=my_data[header].replace(np.nan,mean)
+        
+        my_data.dropna(axis=0,inplace=True)
+        my_data=my_data.apply(lambda x:(x-np.min(x))/(np.max(x)-np.min(x)))
+        X_data=my_data[my_features]
+        Y_data=my_data['Outcome']
+        
+        X, test_data, y, test_output=train_test_split(X_data,Y_data)
+
+        X=X.values
+        y=y.values.reshape(X.shape[0],1)
+        
+##        my_histogram(X)
+##        my_scattermatrix(X_data)
+##        poly=PolynomialFeatures(degree=2,include_bias=False,interaction_only=False)
+##        X=poly.fit_transform(X)
+##        my_scattermatrix(pd.DataFrame(X))
+        X=np.insert(X,0,1, axis=1)
+        print('Training Data \n',X)
+        print('Training Output \n',y)
+        
+#plot the training data
+##        plot_training_data(X,y)
+#test data
+        test_data=test_data.values
+        test_output=test_output.values.reshape(test_data.shape[0],1)
+##        test_poly=PolynomialFeatures(degree=2,include_bias=False,interaction_only=False)
+##        test_data=test_poly.fit_transform(test_data)
+        print('Test Data:',test_data[0:5])
+        print('Test output:',test_output[0:5])
+
+
+
     return X.shape[1],y.shape[1],X,y,test_data,test_output
 
 #------------------------------------------------------------------------------------------------------
@@ -810,9 +854,14 @@ def feed_forward(test_data,syn0,syn1,activation_function):
 def read_input_parameters():
     """read the model parameters from external text file"""
     values=[]
-    with open("model_parameters.txt") as fp: 
+    with open("model_parameters.txt") as fp:
+        external_file_params=dict() 
         for line in fp: 
             a=line.split('-')
+            if (a[0]=='external'):
+                external_file_params['external_file']=a[3]
+                external_file_params['feature list']=a[4]
+                print(external_file_params)
             values.append(a[0])
             print(a)
     # creating list for parameters and converting to appropiate data type
@@ -847,25 +896,35 @@ def read_input_parameters():
     # values[4]=[int(x) for x in values[4].split('|')]
     # values[5]=values[5].split('|')
 
+    
+
 
     print(values[2])
-    return values
+    return values,external_file_params
 
 # %%
 if __name__ == "__main__":
     
 
-    model_param=read_input_parameters()
+    model_param,ext_file=read_input_parameters()
     for z in model_param:
         print(f'{z}---{type(z)}')
 
     # sys.exit()
 
+    print(f'efile:{ext_file["external_file"]}')
+    print(f'efile:{ext_file["feature list"]}')
+    print(type(ext_file["feature list"]))
+
+# %%
 
     #-----------------------------------------------------------------------------------
     # MAIN PROGRAM *****************************MAIN PROGRAM*************MAIN PROGRAM  
 
     startTime=time.time()
+
+    
+
 
     #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
     n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select=model_param[0]) #model_param[0]

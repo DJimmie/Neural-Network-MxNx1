@@ -1,4 +1,4 @@
-pima-data_select-['ran','CDH','moons','circles','pima']
+external-data_select-['ran','CDH','moons','circles','pima','external']-'C:/Users/Crystal/Desktop/Programs/dataset_repo/diabetes.csv'-['BloodPressure','Age','BMI']
 yes-plotMe-['yes','no']
 .1|s-learningRate-[.1,.05,.01]
 500|s-epoch-[list of integers with each element>1]
