@@ -1,6 +1,6 @@
-external-data_select-['ran','CDH','moons','circles','pima','external']-'C:/Users/Crystal/Desktop/Programs/dataset_repo/diabetes.csv'-['BloodPressure','Age','BMI']
+external-data_select-['ran','CDH','moons','circles','pima','external']-C:/Users/Crystal/Desktop/Programs/dataset_repo/LCDS_Datasets/heart_failure_clinical_records_dataset.csv-time,ejection_fraction,serum_creatinine-DEATH_EVENT
 yes-plotMe-['yes','no']
 .1|s-learningRate-[.1,.05,.01]
 500|s-epoch-[list of integers with each element>1]
-24|12|6-hiddenLayerNeurons-[list of integers with each element=>2]
-tanh|relu-activationFunction-['sig','relu','tanh']
+6|s-hiddenLayerNeurons-[list of integers with each element=>2]
+tanh|s-activationFunction-['sig','relu','tanh']

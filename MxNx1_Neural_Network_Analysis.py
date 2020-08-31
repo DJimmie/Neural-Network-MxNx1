@@ -640,9 +640,9 @@ def data_set_select(data_select):
 #_____________________PIMA__________________________________
     elif (data_select=='pima'):
 #feature matrix
-        the_file=r'C:\Users\Crystal\Desktop\Programs\dataset_repo\diabetes.csv'
+        the_file=r'C:\Users\Crystal\Desktop\Programs\dataset_repo\Pre-2020 Datasets\diabetes.csv'
         usecols=['Pregnancies','Glucose','BloodPressure','SkinThickness','Insulin','BMI','DiabetesPedigreeFunction','Age','Outcome']
-        my_features=['BloodPressure','Age','BMI']
+        my_features=['BloodPressure','Age']
         my_data=pd.read_csv(the_file,usecols=usecols)
 
         replace_the_zeros=['Age','Glucose','BloodPressure','SkinThickness','Insulin','BMI']
@@ -684,22 +684,21 @@ def data_set_select(data_select):
 #_____________________EXTERNAL FILE__________________________________
     elif (data_select=='external'):
 #feature matrix
-        the_file=external_file
-        my_features=the_features
-        my_data=pd.read_csv(the_file,usecols=my_features)
-
-        # replace_the_zeros=['Age','Glucose','BloodPressure','SkinThickness','Insulin','BMI']
-        # for header in replace_the_zeros:
-        #     my_data[header]=my_data[header].replace(0,np.nan)
-        #     mean=int(my_data[header].mean(skipna=True))
-        #     my_data[header]=my_data[header].replace(np.nan,mean)
+        the_file=ext_fname #'C:/Users/Crystal/Desktop/Programs/dataset_repo/LCDS_Datasets/heart_failure_clinical_records_dataset.csv'
+        print(f'type:{type(ext_fname)}')
+        my_features=feature_list #['creatinine_phosphokinase', 'ejection_fraction']
+        usecols=my_features.insert(len(my_features),ext_target)
+        my_data=pd.read_csv(the_file,usecols=usecols)
+        my_features.pop()
         
         my_data.dropna(axis=0,inplace=True)
         my_data=my_data.apply(lambda x:(x-np.min(x))/(np.max(x)-np.min(x)))
         X_data=my_data[my_features]
-        Y_data=my_data['Outcome']
+        Y_data=my_data[ext_target]
         
-        X, test_data, y, test_output=train_test_split(X_data,Y_data)
+        X, test_data, y, test_output=train_test_split(X_data,Y_data,
+        test_size=.20,
+        random_state=42)
 
         X=X.values
         y=y.values.reshape(X.shape[0],1)
@@ -788,7 +787,7 @@ def decision_boundary_plot(X,y,syn0,syn1,activation_function,the_test_results,te
     plt.scatter(x1_b,x2_b,cmap=cm,vmin=0,vmax=1,c=prob_b,marker='d')
     
     plt.colorbar()
-##    plt.show()
+    # plt.show()  # generates a lot of plots so I disabled it unless needed.
 
 #-----------------------------------------------------------------------------------
 def feed_forward(test_data,syn0,syn1,activation_function):
@@ -856,12 +855,17 @@ def read_input_parameters():
     values=[]
     with open("model_parameters.txt") as fp:
         external_file_params=dict() 
-        for line in fp: 
+        for line in fp:
             a=line.split('-')
             if (a[0]=='external'):
                 external_file_params['external_file']=a[3]
                 external_file_params['feature list']=a[4]
+                external_file_params['target']=a[5]
                 print(external_file_params)
+            # else:
+            #     external_file_params['external_file']=None
+            #     external_file_params['feature list']=None
+            #     external_file_params['target']=None
             values.append(a[0])
             print(a)
     # creating list for parameters and converting to appropiate data type
@@ -904,6 +908,7 @@ def read_input_parameters():
 
 # %%
 if __name__ == "__main__":
+    global ext_fname, feature_list,ext_target
     
 
     model_param,ext_file=read_input_parameters()
@@ -911,10 +916,24 @@ if __name__ == "__main__":
         print(f'{z}---{type(z)}')
 
     # sys.exit()
+    print(f'shit{ext_file}')
+    if (model_param[0]=='external'): #not ext_file==False
+        print(f'efile:{ext_file["external_file"]}')
+        print(f'efile:{ext_file["feature list"]}')
+        print(f'efile:{ext_file["target"]}')
 
-    print(f'efile:{ext_file["external_file"]}')
-    print(f'efile:{ext_file["feature list"]}')
-    print(type(ext_file["feature list"]))
+        ext_fname=ext_file["external_file"]
+        feature_list=ext_file["feature list"].split(',')
+        ext_target=ext_file["target"].rstrip('\n')
+
+        print(f'feature list: {feature_list}')
+        print(feature_list[1])
+        feature_list[1].rstrip('\n')
+        print(f'feature list: {feature_list}')
+        print(type(feature_list))
+
+    
+
 
 # %%
 
@@ -922,9 +941,6 @@ if __name__ == "__main__":
     # MAIN PROGRAM *****************************MAIN PROGRAM*************MAIN PROGRAM  
 
     startTime=time.time()
-
-    
-
 
     #Data Selection (your options are: ran or CDH or stock or moons or circles or pima)
     n_inputs,n_outputs,X,y,test_data,test_output=data_set_select(data_select=model_param[0]) #model_param[0]
@@ -961,7 +977,7 @@ if __name__ == "__main__":
 
     plot_count=0
 
-
+# %%
 
     for n_hidden,num_epoch,Alpha,activation_function in [(n_hidden,num_epoch,Alpha,activation_function) for n_hidden in neurons for num_epoch in epoch for Alpha in learn_rate for activation_function in AF]:
 
@@ -995,8 +1011,8 @@ if __name__ == "__main__":
         act_function.append(activation_function)
         loss_function.append(the_cost)
         
-
-        if ((n_inputs-1)==2)and plot_me==model_param[1]:  #model_param[1]
+        print(f'n_inputs-1: {n_inputs-1}')
+        if ((n_inputs-1)==2): #and plot_me=='yes':  #model_param[1]
             
             dd=decision_boundary_plot(X,y,trained_syn0,trained_syn1,activation_function,the_test_results,test_output,num_epoch,Alpha,n_hidden,model_accuracy)
 
@@ -1004,17 +1020,15 @@ if __name__ == "__main__":
 
             location=r'C:\Users\Crystal\Desktop\Programs\neural_network\NN_Result_{}.pdf'.format(plot_count)
             plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
-              orientation='portrait', papertype=None, format=None,
-              transparent=False, bbox_inches=None, pad_inches=0.1,
-              frameon=None)
+              orientation='portrait', format=None,
+              transparent=False, bbox_inches=None, pad_inches=0.1)
         
         cf=plot_cost_function(CFXplot,CFYplot,num_epoch,Alpha,n_hidden,model_accuracy,activation_function)
 
         location=r'C:\Users\Crystal\Desktop\Programs\neural_network\CF_Result_{}.pdf'.format(plot_count)
         plt.savefig(location, dpi=None, facecolor='w', edgecolor='w',
-              orientation='portrait', papertype=None, format=None,
-              transparent=False, bbox_inches=None, pad_inches=0.1,
-              frameon=None)
+              orientation='portrait',format=None,
+              transparent=False, bbox_inches=None, pad_inches=0.1)
         
         plot_count=plot_count+1
 
@@ -1064,3 +1078,5 @@ if __name__ == "__main__":
 
 
 
+
+# %%
